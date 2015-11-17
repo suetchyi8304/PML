@@ -4,7 +4,6 @@ output: html_document
 ---
 #####Author: Kelly Yap Suet Chyi#####
 
-
 ###Overview###
 In this project, there are 2 sets of data given. These are the data from accelerometers on the belt, forearm, arm and dumbell of 6 participants. Participants were asked to perform barbell lifts correctly and incorrectly in 5 different ways. The training dataset consists of accelerometer data and a label identifying the quality of the activity the participant was doing. The testing dataset consists of accelerometer data without the identifying label. The goal of this project is to predict the labels in the test ser obversation based on the model built using the training set. 
 
