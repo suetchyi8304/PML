@@ -5,7 +5,7 @@ output: html_document
 #####Author: Kelly Yap Suet Chyi#####
 
 ###Overview###
-In this project, there are 2 sets of data given. These are the data from accelerometers on the belt, forearm, arm and dumbell of 6 participants. Participants were asked to perform barbell lifts correctly and incorrectly in 5 different ways. The training dataset consists of accelerometer data and a label identifying the quality of the activity the participant was doing. The testing dataset consists of accelerometer data without the identifying label. The goal of this project is to predict the labels in the test ser obversation based on the model built using the training set. 
+In this project, there are 2 sets of data given. These are the data from accelerometers on the belt, forearm, arm and dumbell of 6 participants. Participants were asked to perform barbell lifts correctly and incorrectly in 5 different ways. The training dataset consists of accelerometer data and a label identifying the quality of the activity the participant was doing. The testing dataset consists of accelerometer data without the identifying label. The goal of this project is to predict the labels in the test set obversation based on the model built using the training set. 
 
 
 ###Data Processing###
@@ -33,9 +33,10 @@ dim(Train)
 #Group the variable - classe and get the total count of each group
 summary(Train$classe)
 ```
+
 There are 19,622 records with 160 variables, and with five different classes(A,B,C,D,E) in the training set.Variable - classe is the variable that we need to predict in the testing set. 
 <br>
-From the training set, splitting the dataset into 2 (70% and 30%) in order to estimate the out of sample error in the later part of the project. The largeer set (SubTrain) is used to train the model, the smaller set (SubTest) is used to test the performance of the model. 
+From the training set, splitting the dataset into 2 (70% and 30%) in order to estimate the out of sample error. The larger set (SubTrain) is used to train the model, the smaller set (SubTest) is used to test the performance of the model. 
 ```{r}
 set.seed(100)
 inTrain <- createDataPartition(y=Train$classe, p=0.7, list=F)
@@ -45,7 +46,7 @@ dim(SubTrain)
 dim(SubTest)
 ```
 
-Some of the variables are mostly NA. Thus, removing these variables with lot of missing values since they are not useful in building the model. 
+Some of the variables are mostly NA. Thus, removing those variables since they are not useful in building the model. 
 ```{r}
 # remove variables that are mostly NA
 NAVar <- sapply(SubTrain, function(x) mean(is.na(x))) > 0.95
@@ -54,7 +55,9 @@ SubTest <- SubTest[, NAVar==F]
 dim(SubTrain)
 dim(SubTest)
 ```
+
 Now SubTrain and SubTest datasets are down to 60 variables. 
+<br>
 Second step is to remove variables with nearly zero variance. 
 ```{r]}
 # remove variables with nearly zero variance
@@ -64,8 +67,10 @@ SubTest <- SubTest[, -ZeroVar]
 dim(SubTrain)
 dim(SubTest)
 ```
+
 After removing the nearly zero variance variable, There are 59 variables remaining in our datasets. 
-The first 7 variables may not be pertinent to the prediction model. Therefore, those can be removed. 
+<br>
+The first 7 variables may not be pertinent to the predicting model. Therefore, those can be removed. 
 ```{r}
 # remove the first seven variables that are not pertinent to the prediction model
 SubTrain <- SubTrain[, -(1:7)]
@@ -73,11 +78,13 @@ SubTest <- SubTest[, -(1:7)]
 dim(SubTrain)
 dim(SubTest)
 ```
+
 Now there are 52 variables remaining for building the model. 
+
 
 ###Model Building###
 ####Model #1: Random Forest####
-For preliminary analysis, random forest algorithm is chosen to build the predicting model on SubTrain dataset. Using 3-fold corss validation to select optimal tuning parameters for the model.
+For preliminary analysis, random forest algorithm is chosen to build the predicting model on SubTrain dataset. Using 3-fold cross validation to select optimal tuning parameters for the model.
 ```{r}
 # use 3-fold Cross validation to select optimal tuning parameters
 fitControl <- trainControl(method="cv", number=3, verboseIter=F)
@@ -86,7 +93,7 @@ fitControl <- trainControl(method="cv", number=3, verboseIter=F)
 RFModel <- train(classe ~ ., data=SubTrain, method="rf", trControl=fitControl)
 ```
 
-fter building the model in SubTrain, use the model to predict the classe in SubTest to validate the accuracy.
+After building the model in SubTrain, use the model to predict the classe in SubTest to validate the accuracy.
 ```{r}
 # validate the random forest model on SubTest
 predictedRF <- predict(RFModel, newdata=SubTest)
@@ -94,14 +101,12 @@ predictedRF <- predict(RFModel, newdata=SubTest)
 # show the confusion matrix for random forest Model
 confusionMatrix(SubTest$classe, predictedRF)
 ```
+
 The above confusion Matrix and Statistics shows that the accuracy is 99.34%, thus the out of sample error is 0.66%.
 
 ####Model #2: Decision Tree####
-Now, trying to build the predicting model by using deicison tree on the SubTrain dataset.
+Now, trying to build the predicting model by using deicison tree algorithm on the SubTrain dataset.
 ```{r}
-# use 3-fold Cross validation to select optimal tuning parameters
-fitControl <- trainControl(method="cv", number=3, verboseIter=F)
-
 # fit random forest model on SubTrain
 DTModel <- rpart(classe ~., data=SubTrain, method="class")
 
@@ -114,15 +119,19 @@ predictedDT <- predict(DTModel, newdata=SubTest, type="class")
 # show the confusion matrix for decision tree
 confusionMatrix(SubTest$classe, predictedDT)
 ```
+
 The decision tree confusion matrix shows that the accuracy is 69.77% with the out of sample error of 30.23%.
-The above statisics indicate that the accuracy on random forest is way higher than decision tree, thus random forest will be chosen to predict on the test dataset.
+<br>
+The above two confusion matrices (Random Forest and Decision Tree) indicate that the accuracy on random forest is way higher than decision tree, thus random forest will be chosen to predict on the test dataset.
+
 
 ###Model Evaluation###
-Now, use the model fit on training set to predict the classe in the testing set. Write those predictions to files for submission in Coursera. 
+Now, use the final selected model fit on training set to predict the classe in the testing set.  
 ```{r}
 # predict on testing set
 predictedtest <- predict(RFModel, newdata=Test)
 ```
+
 
 ###Submission to Coursera###
 Write those predictions to files for submission in Coursera. 
